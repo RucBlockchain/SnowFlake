@@ -1,4 +1,4 @@
-package goSnowFlake
+package SnowFlake
 
 import (
 	"fmt"
