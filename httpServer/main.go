@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/zheng-ji/goSnowFlake"
+	"github.com/RucBlockchain/SnowFlake"
 	"strconv"
 )
 
-var idWorkerMap = make(map[int]*goSnowFlake.IdWorker)
+var idWorkerMap = make(map[int]*SnowFlake.IdWorker)
 
 func main() {
 	r := gin.Default()
@@ -25,7 +25,7 @@ func main() {
 			nid, _ := value.NextId()
 			c.JSON(200, gin.H{"id": nid})
 		} else {
-			iw, err := goSnowFlake.NewIdWorker(int64(id))
+			iw, err := SnowFlake.NewIdWorker(int64(id))
 			if err == nil {
 				nid, _ := iw.NextId()
 				idWorkerMap[id] = iw
