@@ -1,0 +1,86 @@
+
+
+echo
+echo "##########################################################"
+echo "################### chaincode install ####################"
+echo "##########################################################"
+echo
+peer chaincode install -p chaincodedev/chaincode/task -n mycc -v 0
+
+echo
+echo "##########################################################"
+echo "############### chaincode instantiate ####################"
+echo "##########################################################"
+echo
+peer chaincode instantiate -n mycc -v 0 -c '{"Args":["Init"]}' -C myc
+
+sleep 3
+
+echo
+echo "##########################################################"
+echo "###################### writeRequest ######################"
+echo "##########################################################"
+echo
+peer chaincode invoke -n mycc -v 0 -c '{"Args":["writeRequest","1", "u1", "collect_data", "0.31", "6.9", "12.7"]}' -C myc
+
+peer chaincode invoke -n mycc -v 0 -c '{"Args":["writeRequest","2", "u1", "collect_data", "0.5", "1.9", "7.3"]}' -C myc
+
+sleep 3
+
+echo
+echo "##########################################################"
+echo "################### writeRequestArray ####################"
+echo "##########################################################"
+echo
+peer chaincode invoke -n mycc -v 0 -c '{"Args":["writeRequestArray","u1", "collect_data", "0.5", "1.9", "7.3", "0.31", "6.9", "12.7"]}' -C myc
+
+peer chaincode invoke -n mycc -v 0 -c '{"Args":["writeRequestArray","u1", "collect_data", "1.5", "2.6", "10.0"]}' -C myc
+
+peer chaincode invoke -n mycc -v 0 -c '{"Args":["writeRequestArray","u1", "collect_data", "1.5", "2.6", "10.0"]}' -C myc
+
+sleep 3
+
+echo
+echo "##########################################################"
+echo "####################### readRequest ######################"
+echo "##########################################################"
+echo
+peer chaincode query -n mycc -c '{"Args":["readRequest", "4", "u1", "collect_data"]}' -C myc
+
+sleep 3
+
+echo
+echo "##########################################################"
+echo "##################### request query ######################"
+echo "##########################################################"
+echo
+peer chaincode query -n mycc -c '{"Args":["queryByObjectType","request"]}' -C myc
+
+
+echo
+echo "##########################################################"
+echo "###################### writeResponse #####################"
+echo "##########################################################"
+echo
+peer chaincode invoke -n mycc -c '{"Args":["writeResponse", "1", "u1", "u2", "collect_data", "0.22", "7.5", "7.0"]}' -C myc
+
+peer chaincode invoke -n mycc -c '{"Args":["writeResponse", "1", "u1", "u3", "collect_data", "0.22", "7.5", "10.0"]}' -C myc
+
+peer chaincode invoke -n mycc -c '{"Args":["writeResponse", "2", "u1", "u4", "collect_data", "0.25", "9.5", "6.0"]}' -C myc
+
+peer chaincode invoke -n mycc -c '{"Args":["writeResponse", "2", "u1", "u5", "collect_data", "0.25", "9.5", "10.0"]}' -C myc
+
+sleep 3
+
+echo "##########################################################"
+echo "###################### readResponse ######################"
+echo "##########################################################"
+echo
+peer chaincode query -n mycc -c '{"Args":["readResponse", "1", "u1", "u2", "collect_data"]}' -C myc
+
+echo
+echo "##########################################################"
+echo "##################### chaincode Check ####################"
+echo "##########################################################"
+echo
+peer chaincode query -n mycc -c '{"Args":["check"]}' -C myc
