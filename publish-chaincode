@@ -1,0 +1,51 @@
+echo
+echo "##########################################################"
+echo "################### chaincode install ####################"
+echo "##########################################################"
+echo
+peer chaincode install -p chaincodedev/chaincode/addTask -n mycc -v 0
+
+sleep 3
+
+echo
+echo "##########################################################"
+echo "############### chaincode instantiate ####################"
+echo "##########################################################"
+echo
+peer chaincode instantiate -n mycc -v 0 -c '{"Args":["Init"]}' -C myc
+
+sleep 3
+
+echo
+echo "##########################################################"
+echo "######################### addTask ########################"
+echo "##########################################################"
+echo
+peer chaincode invoke -n mycc -v 0 -c '{"Args":["addTask", "collect_data", "000"]}' -C myc
+
+peer chaincode invoke -n mycc -v 0 -c '{"Args":["addTask", "collect_data", "111"]}' -C myc
+
+peer chaincode invoke -n mycc -v 0 -c '{"Args":["addTask", "collect_data", "222"]}' -C myc
+
+sleep 3
+
+echo
+echo "##########################################################"
+echo "######################## queryTask #######################"
+echo "##########################################################"
+echo
+peer chaincode query -n mycc -c '{"Args":["queryTask"]}' -C myc
+
+echo
+echo "##########################################################"
+echo "#################### queryTaskByName #####################"
+echo "##########################################################"
+echo
+peer chaincode query -n mycc -v 0 -c '{"Args":["queryTaskByName", "collect_data"]}' -C myc
+
+echo
+echo "##########################################################"
+echo "#################### queryTaskByState ####################"
+echo "##########################################################"
+echo
+peer chaincode query -n mycc -v 0 -c '{"Args":["queryTaskByState", "0"]}' -C myc
