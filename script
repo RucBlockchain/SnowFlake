@@ -188,7 +188,7 @@ chaincodeQuery () {
 	CHAINCODE_NAME=$2
 	PARAMETER=$3
 
-	peer chaincode query -n $CHAINCODE_NAME  -v 0 -c $PARAMETER -C $CHANNEL_NAME
+	peer chaincode query -n $CHAINCODE_NAME  -v 1.0 -c $PARAMETER -C $CHANNEL_NAME
 
 	res=$?
 	cat log.txt
@@ -222,7 +222,7 @@ echo "################## publish.go install ####################"
 echo "##########################################################"
 echo
 PUBLISH_CHAINCODENAME=mycc
-installChaincode 0 $PUBLISH_CHAINCODENAME publish1
+installChaincode 0 $PUBLISH_CHAINCODENAME publish
 
 ## instantiate chaincode on peer0/org1
 echo
@@ -240,17 +240,14 @@ echo "#################### generateTaskId ######################"
 echo "##########################################################"
 echo
 PUBLISH_CHAINCODENAME=mycc
-taskId=`peer chaincode query -n $PUBLISH_CHAINCODENAME  -v 0 -c '{"Args":["generateTaskId"]}' -C $CHANNEL_NAME | grep -o '[0-9]*[0-9]'`
+taskId=`peer chaincode query -n $PUBLISH_CHAINCODENAME  -v 1.0 -c '{"Args":["generateTaskId"]}' -C $CHANNEL_NAME | grep -o '[0-9]*[0-9]'`
 echo task id is:$taskId
-#chaincodeGetTaskId 0
 
 echo
 echo "##########################################################"
 echo "######################### addTask ########################"
 echo "##########################################################"
 echo
-#setGlobals 0
-#peer chaincode invoke -o orderer.example.com:7050  --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -n $CHAINCODE_NAME1  -v 1.0 -c '{"Args":["addTask", "'${taskId}'", "collect_data", "000"]}' -C $CHANNEL_NAME
 chaincodeInvoke 0 $PUBLISH_CHAINCODENAME '{"Args":["addTask","'${taskId}'","collect_data","000"]}'
 
 sleep 3
@@ -260,8 +257,6 @@ echo "##########################################################"
 echo "######################## queryTask #######################"
 echo "##########################################################"
 echo
-#setGlobals 0
-#peer chaincode query -n $CHAINCODE_NAME1  -v 1.0 -c '{"Args":["queryTask"]}' -C $CHANNEL_NAME
 chaincodeQuery 0 $PUBLISH_CHAINCODENAME '{"Args":["queryTask"]}'
 
 
@@ -283,19 +278,24 @@ sleep 3
 
 echo
 echo "##########################################################"
+echo "################## generateRequestId #####################"
+echo "##########################################################"
+echo
+requestId=`peer chaincode query -n $taskId  -v 1.0 -c '{"Args":["generateRequestId"]}' -C $CHANNEL_NAME | grep -o '[0-9]*[0-9]'`
+echo request id is:$requestId
+
+echo
+echo "##########################################################"
 echo "###################### writeRequest ######################"
 echo "##########################################################"
 echo
-#setGlobals 0
-#peer chaincode invoke -o orderer.example.com:7050  --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -n $taskId -v 1.0 -c '{"Args":["writeRequest", "1", "u1", "'${taskId}'", "0.31", "6.9", "12.7"]}' -C $CHANNEL_NAME
-chaincodeInvoke 0 $taskId '{"Args":["writeRequest","1","u1","'${taskId}'","0.31","6.9","12.7"]}'
+chaincodeInvoke 0 $taskId '{"Args":["writeRequest","'${requestId}'","u1","'${taskId}'","0.31","6.9","12.7"]}'
 
 #echo
 #echo "##########################################################"
 #echo "################### writeRequestArray ####################"
 #echo "##########################################################"
 #echo
-#peer chaincode invoke -o orderer.example.com:7050  --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -n $taskId -v 1.0 -c '{"Args":["writeRequestArray","u1", "'${taskId}'", "0.5", "1.9", "7.3", "0.31", "6.9", "12.7"]}' -C $CHANNEL_NAME
 #chaincodeWriteRequestArray 0 $taskId '{"Args":["writeRequestArray","u1","'${taskId}'","0.5","1.9","7.3","0.31","6.9","12.7"]}'
 
 echo
@@ -303,8 +303,6 @@ echo "##########################################################"
 echo "################### changeStateToWait ####################"
 echo "##########################################################"
 echo
-#setGlobals 0
-#peer chaincode invoke -o orderer.example.com:7050  --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -n $taskId -n $taskId -v 1.0 -c '{"Args":["changeStateToWait", "'${taskId}'"]}' -C $CHANNEL_NAME
 chaincodeInvoke 0 $taskId '{"Args":["changeStateToWait","'${taskId}'"]}'
 
 sleep 3
@@ -314,17 +312,13 @@ echo "##########################################################"
 echo "####################### readRequest ######################"
 echo "##########################################################"
 echo
-#setGlobals 0
-#peer chaincode query -n $taskId -c '{"Args":["readRequest", "1", "u1", "'${taskId}'"]}' -C $CHANNEL_NAME
-chaincodeQuery 0 $taskId '{"Args":["readRequest","1","u1","'${taskId}'"]}'
+chaincodeQuery 0 $taskId '{"Args":["readRequest","'${requestId}'","u1","'${taskId}'"]}'
 
 echo
 echo "##########################################################"
 echo "##################### request query ######################"
 echo "##########################################################"
 echo
-#setGlobals 0
-#peer chaincode query -n $taskId -c '{"Args":["queryByObjectType", "'${taskId}'", "request"]}' -C $CHANNEL_NAME
 chaincodeQuery 0 $taskId '{"Args":["queryByObjectType","'${taskId}'","request"]}'
 
 echo
@@ -343,7 +337,7 @@ echo
 
 #peer chaincode invoke -o orderer.example.com:7050  --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -n $taskId -v 1.0 -c '{"Args":["writeResponse", "2", "u1", "s5", "'${taskId}'", "0.25", "9.5", "6.0"]}' -C $CHANNEL_NAME
 
-chaincodeInvoke 0 $taskId '{"Args":["writeResponse","1","u1","s1","'${taskId}'","0.32","6.5","7.0"]}'
+chaincodeInvoke 0 $taskId '{"Args":["writeResponse","'${requestId}'","u1","s1","'${taskId}'","0.32","6.5","7.0"]}'
 
 sleep 3
 
@@ -351,17 +345,13 @@ echo "##########################################################"
 echo "###################### readResponse ######################"
 echo "##########################################################"
 echo
-#setGlobals 0
-#peer chaincode query -n $taskId -c '{"Args":["readResponse", "1", "u1", "s1", "'${taskId}'"]}' -C $CHANNEL_NAME
-chaincodeQuery 0 $taskId '{"Args":["readResponse","1","u1","s1","'${taskId}'"]}'
+chaincodeQuery 0 $taskId '{"Args":["readResponse","'${requestId}'","u1","s1","'${taskId}'"]}'
 
 echo
 echo "##########################################################"
 echo "##################### chaincode Check ####################"
 echo "##########################################################"
 echo
-#setGlobals 0
-#peer chaincode invoke -o orderer.example.com:7050  --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -n $taskId -c '{"Args":["check", "'${taskId}'"]}' -C $CHANNEL_NAME
 chaincodeInvoke 0 $taskId '{"Args":["check","'${taskId}'"]}'
 
 sleep 3
@@ -376,44 +366,58 @@ state=`peer chaincode query -n $taskId -c '{"Args":["readState", "'${taskId}'"]}
 echo state is:$state
 
 if state="rejection"; then
+
+echo
+echo "##########################################################"
+echo "################ reGenerateRequestId #####################"
+echo "##########################################################"
+echo
+requestId2nd=`peer chaincode query -n $taskId  -v 1.0 -c '{"Args":["generateRequestId"]}' -C $CHANNEL_NAME | grep -o '[0-9]*[0-9]'`
+echo request id is:$requestId2nd
+
 echo
 echo "##########################################################"
 echo "##################### rewriteRequest #####################"
 echo "##########################################################"
 echo
-#setGlobals 0
-#peer chaincode invoke -o orderer.example.com:7050  --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -n $taskId -v 1.0 -c '{"Args":["writeRequest", "2", "u1", "'${taskId}'", "0.32", "7.0", "13.7"]}' -C $CHANNEL_NAME
-chaincodeInvoke 0 $taskId '{"Args":["writeRequest","2","u1","'${taskId}'","0.32","7.0","13.7"]}'
+chaincodeInvoke 0 $taskId '{"Args":["writeRequest","'${requestId2nd}'","u1","'${taskId}'","0.32","7.0","13.7"]}'
 
 echo
 echo "##########################################################"
 echo "################### changeStateToWait ####################"
 echo "##########################################################"
 echo
-#setGlobals 0
-#peer chaincode invoke -o orderer.example.com:7050  --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -n $taskId -n $taskId -v 1.0 -c '{"Args":["changeStateToWait", "'${taskId}'"]}' -C $CHANNEL_NAME
 chaincodeInvoke 0 $taskId '{"Args":["changeStateToWait","'${taskId}'"]}'
 
 sleep 3
 
 echo
 echo "##########################################################"
+echo "####################### readRequest ######################"
+echo "##########################################################"
+echo
+chaincodeQuery 0 $taskId '{"Args":["readRequest","'${requestId2nd}'","u1","'${taskId}'"]}'
+
+echo
+echo "##########################################################"
 echo "##################### rewriteResponse ####################"
 echo "##########################################################"
 echo
-#setGlobals 0
-#peer chaincode invoke -o orderer.example.com:7050  --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -n $taskId -v 1.0 -c '{"Args":["writeResponse", "2", "u1", "s1", "'${taskId}'", "0.30", "8.5", "7.0"]}' -C $CHANNEL_NAME
-chaincodeInvoke 0 $taskId '{"Args":["writeResponse","2","u1","s1","'${taskId}'","0.30","8.5","7.0"]}'
+chaincodeInvoke 0 $taskId '{"Args":["writeResponse","'${requestId2nd}'","u1","s1","'${taskId}'","0.30","8.5","7.0"]}'
 
 sleep 3
+
+echo "##########################################################"
+echo "###################### readResponse ######################"
+echo "##########################################################"
+echo
+chaincodeQuery 0 $taskId '{"Args":["readResponse","'${requestId2nd}'","u1","s1","'${taskId}'"]}'
 
 echo
 echo "##########################################################"
 echo "################### recheck chaincode ####################"
 echo "##########################################################"
 echo
-#setGlobals 0
-#peer chaincode invoke -o orderer.example.com:7050  --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -n $taskId -c '{"Args":["check", "'${taskId}'"]}' -C $CHANNEL_NAME
 chaincodeInvoke 0 $taskId '{"Args":["check","'${taskId}'"]}'
 
 sleep 3
@@ -424,7 +428,7 @@ echo "####################### readState ########################"
 echo "##########################################################"
 echo
 setGlobals 0
-state=`peer chaincode query -n $taskId -c '{"Args":["readState", "'${taskId}'"]}' -C $CHANNEL_NAME`
+state=`peer chaincode query -n $taskId -c '{"Args":["readState","'${taskId}'"]}' -C $CHANNEL_NAME`
 echo state is:$state
 
 fi
@@ -434,8 +438,6 @@ echo "##########################################################"
 echo "##################### agreement query ####################"
 echo "##########################################################"
 echo
-#setGlobals 0
-#peer chaincode query -n $taskId -c '{"Args":["queryByObjectType", "'${taskId}'", "agreement"]}' -C $CHANNEL_NAME
 chaincodeQuery 0 $taskId '{"Args":["queryByObjectType","'${taskId}'","agreement"]}'
 
 
